@@ -1,8 +1,22 @@
-# New notes and attachments will be added to the existing ones.
+# Put ZIP file from Day One export into vault directory.
+# Call 'make initial' for first import from Day One.
+# After that call 'make' (target will be 'all' since it is the first target) to add
+# new notes and attachments to the existing ones.
+# For updates, only need to export new entries, with some overlap to be safe.
+# Scripts will check for overlaps and ignore known UUIDs.
+# Scripts assume directory with scripts is parallel to vault directory, so run in vault
+# directory and maybe have soft link in vault direcory with:
+# ln -s ~/dayone-json-to-obsidian/makefile makefile
 
 .PHONY: move all markdown prepare
 
 all: prepare markdown move
+
+initial:
+	unzip *.zip
+	rm *.zip
+	jq -r -f ~/dayone-json-to-obsidian/journal.jq < Journal.json | sed -f ~/dayone-json-to-obsidian/journal.sed | awk -f ~/dayone-json-to-obsidian/journal.awk
+	sh ~/dayone-json-to-obsidian/move.sh
 
 prepare:
 	mv -f Journal.json Backup.json
@@ -10,7 +24,7 @@ prepare:
 	rm *.zip
 
 markdown: Import.json ~/dayone-json-to-obsidian/journal.jq ~/dayone-json-to-obsidian/journal.awk
-	jq -r -f ~/dayone-json-to-obsidian/journal.jq < Import.json | awk -f ~/dayone-json-to-obsidian/journal.awk
+	jq -r -f ~/dayone-json-to-obsidian/journal.jq < Import.json | sed -f ~/dayone-json-to-obsidian/journal.sed | awk -f ~/dayone-json-to-obsidian/journal.awk
 
 move:
 	sh ~/dayone-json-to-obsidian/move.sh
