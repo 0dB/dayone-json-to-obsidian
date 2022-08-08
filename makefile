@@ -5,25 +5,26 @@
 # For updates, only need to export new entries, with some overlap to be safe.
 # Scripts will check for overlaps and ignore known UUIDs.
 # Scripts assume directory with scripts is parallel to vault directory, so run in vault
-# directory and maybe have soft link in vault direcory with:
+# directory and maybe have soft link in vault directory with:
 # ln -s ~/dayone-json-to-obsidian/makefile makefile
 
-.PHONY: move all markdown prepare
+.PHONY: move all update backup unzip import initial
 
-all: prepare markdown move
+all: backup unzip update move
 
-initial:
-	unzip *.zip
-	rm *.zip
-	jq -r -f ~/dayone-json-to-obsidian/journal.jq < Journal.json | sed -f ~/dayone-json-to-obsidian/journal.sed | awk -f ~/dayone-json-to-obsidian/journal.awk
-	sh ~/dayone-json-to-obsidian/move.sh
+initial: unzip import move
 
-prepare:
+backup:
 	mv -f Journal.json Backup.json
+
+unzip:
 	unzip *.zip
 	rm *.zip
 
-markdown: Import.json ~/dayone-json-to-obsidian/journal.jq ~/dayone-json-to-obsidian/journal.awk
+import:
+	jq -r -f ~/dayone-json-to-obsidian/journal.jq < Journal.json | sed -f ~/dayone-json-to-obsidian/journal.sed | awk -f ~/dayone-json-to-obsidian/journal.awk
+
+update: Import.json ~/dayone-json-to-obsidian/journal.jq ~/dayone-json-to-obsidian/journal.awk
 	jq -r -f ~/dayone-json-to-obsidian/journal.jq < Import.json | sed -f ~/dayone-json-to-obsidian/journal.sed | awk -f ~/dayone-json-to-obsidian/journal.awk
 
 move:
